@@ -7,77 +7,120 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+    private var inputNameIsValid: Boolean = false
+    private var inputStrengthIsValid: Boolean = false
+    private var inputHealthIsValid: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//      Checa quando o usuário da foco no campo, para validação.
-        input_fighter_name.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) validateFields(input_fighter_name) else null
-        }
-        input_fighter_strength.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) validateFields(input_fighter_strength) else null
-        }
-        input_fighter_health.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) validateFields(input_fighter_health) else null
-        }
+        button_estimate_power.isEnabled = false
 
-        if (input_fighter_health.error.isNullOrBlank() &&
-            input_fighter_name.error.isNullOrBlank() &&
-            input_fighter_strength.error.isNullOrBlank()) {
-            // Permitir o botão
-        }
+        validateInputName(input_fighter_name)
+        validateInputStrength(input_fighter_strength)
+        validateInputHealth(input_fighter_health)
     }
 
-    /*
-        Foi feito desta forma para fins de aprendizado, utilizando principios de
-        responsabilidade única, creio que o melhor e ideal seria uma função
-        (addTextChangedListener) de validação para cada campo.
-     */
-    fun validateFields(field: EditText) {
-        field.addTextChangedListener(object: TextWatcher {
+//  Validações dos campos
+    private fun validateInputName(input: EditText) {
+        input.addTextChangedListener(object: TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val pattern = "[$&+,:;=\\\\?@#|/'<>.^*()%!-]".toRegex()
+                when {
+                    count <= 0 -> {
+                        input.error = "Não pode ser vazio"
+                        inputNameIsValid = false
+                    }
+                    count >= 50 -> {
+                        input.error = "Não pode ter mais que 50 caracteres"
+                        inputNameIsValid = false
+                    }
+                    !pattern.containsMatchIn(s.toString()) -> {
+                        inputNameIsValid = true
+                    }
+                    else -> {
+                        input.error = "Não pode conter caracteres especiais"
+                        inputNameIsValid = false
+                    }
+                }
+                enableButton()
+            }
+        })
+    }
+
+    private fun validateInputStrength(input: EditText) {
+        input.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if(!s.isNullOrEmpty()) {
-                    when (field) {
-                        input_fighter_name ->
-                            field.error = validateName(s)
-                        input_fighter_strength ->
-                            field.error = validateStrength(s.toString().toInt())
-                        input_fighter_health ->
-                            field.error = validateHealth(s.toString().toInt())
+                    val strengthValue: Int = s.toString().toInt()
+                    when {
+                        strengthValue <= 0 -> {
+                            input.error = "Força do seu guerreiro não pode ser negativa"
+                            inputStrengthIsValid = false
+                        }
+                        strengthValue >= 100 -> {
+                            input.error = "Guerreiro não pode ter força maior que 100"
+                            inputStrengthIsValid = false
+                        }
+                        else -> {
+                            inputStrengthIsValid = true
+                        }
                     }
+                } else {
+                    inputStrengthIsValid = false
                 }
+                enableButton()
             }
         })
     }
 
-    /*
-        Regra de válidação para os campos correspondentes.
-     */
-    fun validateName(s: CharSequence?): String? {
-        val pattern = "[$&+,:;=\\\\?@#|/'<>.^*()%!-]".toRegex()
-        return if(!pattern.containsMatchIn(s.toString())) null
-            else "Não pode conter caracteres especiais"
+    private fun validateInputHealth(input: EditText) {
+        input.addTextChangedListener(object: TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if(!s.isNullOrEmpty()) {
+                    val healthValue: Int = s.toString().toInt()
+                    when {
+                        healthValue <= 0 -> {
+                            input.error = "Guerreiro não se encontra vivo"
+                            inputHealthIsValid = false
+                        }
+                        healthValue >= 100 -> {
+                            input.error = "Guerreiro não pode ter vida maior que 100"
+                            inputHealthIsValid = false
+                        }
+                        else -> {
+                            inputHealthIsValid = true
+                        }
+                    }
+                } else {
+                    inputStrengthIsValid = false
+                }
+                enableButton()
+            }
+        })
     }
 
-    fun validateStrength(strength: Int): String? {
-        return if(strength <= 0) "Força do seu guerreiro não pode ser negativa"
-            else if (strength >= 100) "Guerreiro não pode ter força maior que 100"
-            else null
-    }
-
-    fun validateHealth(health: Int): String? {
-        return if (health <= 0) "Guerreiro não se encontra vivo"
-            else if (health >= 100) "Guerreiro não pode ter vida maior que 100"
-            else null
+//  Ativar o botão
+    private fun enableButton() {
+        button_estimate_power.isEnabled = inputNameIsValid && inputStrengthIsValid && inputHealthIsValid
     }
 
     /*
@@ -95,18 +138,24 @@ class MainActivity : AppCompatActivity() {
             findViewById<EditText>(R.id.input_fighter_health)
                 .text
                 .toString()
-                .toInt()
+                .toInt(),
+            Breed.valueOf(
+                findViewById<Spinner>(R.id.spinner_fighter_breed)
+                    .selectedItem
+                    .toString()
+                    .toUpperCase()
+            )
         )
 
-        val fighterPower = fighter.getPower()
-
         findViewById<TextView>(R.id.result_text).apply {
-            if (fighterPower in 0..50) {
+            if (fighter.getPower() >= 50.0) {
+                setTextColor(Color.parseColor("#0984e3"))
+                text =
+                    "Lutador de alto nível melhor tomar cuidado. \n${fighter.toString()}"
+            } else {
                 setTextColor(Color.parseColor("#d63031"))
-                text = "Lutador ainda precisa de treinamento. Seu poder é de ${fighterPower}"
+                text = "Lutador ainda precisa de treinamento. \n ${fighter.toString()}"
             }
-            setTextColor(Color.parseColor("#0984e3"))
-            text = "Lutador de alto nível melhor tomar cuidado. Seu poder é de ${fighterPower}"
         }
     }
 }

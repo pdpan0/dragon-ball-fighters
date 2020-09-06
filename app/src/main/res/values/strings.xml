@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Dragon Ball Fighters</string>
+
+    <!--Spinner Breeds-->
+    <string-array name="spinner_breeds">
+        <item>Sayan</item>
+        <item>Human</item>
+        <item>Namek</item>
+    </string-array>
 </resources>
