@@ -1,7 +1,7 @@
 package com.pdpano.dragonballfighters
 
-enum class Breed(val baseStrength: Double, val baseHealth: Double) {
-    SAYAN(1.15,1.05),
-    HUMAN(1.10, 1.10),
-    NAMEK(1.05,1.20)
+enum class Breed(val baseStrength: Int, val baseHealth: Int) {
+    SAYAN(10,2),
+    HUMAN(5, 5),
+    NAMEK(2,10)
 }

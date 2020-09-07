@@ -1,5 +1,6 @@
 package com.pdpano.dragonballfighters
 
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -10,6 +11,11 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
+
+const val FIGHTER_NAME = "com.pdpano.dragonballfighters.FIGHTER_NAME"
+const val FIGHTER_STRENGTH = "com.pdpano.dragonballfighters.FIGHTER_STRENGTH"
+const val FIGHTER_HEALTH = "com.pdpano.dragonballfighters.FIGHTER_HEALTH"
+const val FIGHTER_BREED = "com.pdpano.dragonballfighters.FIGHTER_BREED"
 
 class MainActivity : AppCompatActivity() {
     private var inputNameIsValid: Boolean = false
@@ -35,24 +41,30 @@ class MainActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val pattern = "[$&+,:;=\\\\?@#|/'<>.^*()%!-]".toRegex()
-                when {
-                    count <= 0 -> {
-                        input.error = "Não pode ser vazio"
-                        inputNameIsValid = false
+                if(!s?.trim().isNullOrEmpty()) {
+                    val pattern = "[$&+,:;=\\\\?@#|/'<>.^*()%!-]".toRegex()
+                    when {
+                        count <= 2 -> {
+                            input.error = "Não pode ter menos de 2 caracteres"
+                            inputNameIsValid = false
+                        }
+                        count >= 50 -> {
+                            input.error = "Não pode ter mais que 50 caracteres"
+                            inputNameIsValid = false
+                        }
+                        !pattern.containsMatchIn(s.toString()) -> {
+                            inputNameIsValid = true
+                        }
+                        else -> {
+                            input.error = "Não pode conter caracteres especiais"
+                            inputNameIsValid = false
+                        }
                     }
-                    count >= 50 -> {
-                        input.error = "Não pode ter mais que 50 caracteres"
-                        inputNameIsValid = false
-                    }
-                    !pattern.containsMatchIn(s.toString()) -> {
-                        inputNameIsValid = true
-                    }
-                    else -> {
-                        input.error = "Não pode conter caracteres especiais"
-                        inputNameIsValid = false
-                    }
+                } else {
+                    input.error = "Campo obrigatório"
+                    inputNameIsValid = false
                 }
+
                 enableButton()
             }
         })
@@ -81,6 +93,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 } else {
+                    input.error = "Campo obrigatório"
                     inputStrengthIsValid = false
                 }
                 enableButton()
@@ -111,7 +124,8 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    inputStrengthIsValid = false
+                    input.error = "Campo obrigatório"
+                    inputHealthIsValid = false
                 }
                 enableButton()
             }
@@ -127,35 +141,32 @@ class MainActivity : AppCompatActivity() {
         Estima o poder do Guerreiro.
      */
     fun calculateEstimatePower(view: View) {
-        val fighter = Fighter(
-            findViewById<EditText>(R.id.input_fighter_name)
-                .text
-                .toString(),
-            findViewById<EditText>(R.id.input_fighter_strength)
-                .text
-                .toString()
-                .toInt(),
-            findViewById<EditText>(R.id.input_fighter_health)
-                .text
-                .toString()
-                .toInt(),
-            Breed.valueOf(
-                findViewById<Spinner>(R.id.spinner_fighter_breed)
-                    .selectedItem
-                    .toString()
-                    .toUpperCase()
-            )
-        )
+        val fighterName = findViewById<EditText>(R.id.input_fighter_name)
+            .text
+            .toString()
 
-        findViewById<TextView>(R.id.result_text).apply {
-            if (fighter.getPower() >= 50.0) {
-                setTextColor(Color.parseColor("#0984e3"))
-                text =
-                    "Lutador de alto nível melhor tomar cuidado. \n${fighter.toString()}"
-            } else {
-                setTextColor(Color.parseColor("#d63031"))
-                text = "Lutador ainda precisa de treinamento. \n ${fighter.toString()}"
-            }
+        val fighterStrength = findViewById<EditText>(R.id.input_fighter_strength)
+            .text
+            .toString()
+            .toInt()
+
+        val fighterHealth = findViewById<EditText>(R.id.input_fighter_health)
+            .text
+            .toString()
+            .toInt()
+
+        val fighterBreed = findViewById<Spinner>(R.id.spinner_fighter_breed)
+            .selectedItem
+            .toString()
+            .toUpperCase()
+
+        val intent = Intent(this, DisplayFighterActivity::class.java).apply {
+            putExtra(FIGHTER_NAME, fighterName)
+            putExtra(FIGHTER_STRENGTH, fighterStrength)
+            putExtra(FIGHTER_HEALTH, fighterHealth)
+            putExtra(FIGHTER_BREED, fighterBreed)
         }
+
+        startActivity(intent)
     }
 }
