@@ -8,9 +8,22 @@
     <TextView
         android:id="@+id/label_fighter"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/image_fighter"/>
+
+    <ImageView
+        android:id="@+id/image_fighter"
+        android:layout_width="349dp"
+        android:layout_height="529dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/label_fighter"
+        app:srcCompat="@drawable/instinto" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
